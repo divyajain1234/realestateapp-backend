@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-UTF-8">
+    <title>Admin Panel – Real Estate</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            font-family: "Poppins", sans-serif;
+            box-sizing: border-box;
+        }
+
+        body {
+            display: flex;
+            background: #f4f6fc;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 240px;
+            background: #0f6fff;
+            color: #fff;
+            padding: 25px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .sidebar h2 {
+            margin-bottom: 30px;
+            font-size: 22px;
+            font-weight: 600;
+        }
+
+        .sidebar a {
+            width: 100%;
+            padding: 14px 20px;
+            text-decoration: none;
+            color: #fff;
+            display: block;
+            font-size: 15px;
+            transition: 0.2s;
+        }
+
+        .sidebar a:hover, .sidebar a.active {
+            background: #004bcc;
+        }
+
+        /* Main Content Area */
+        .main {
+            flex: 1;
+            padding: 40px;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .card {
+            background: #fff;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+            margin-bottom: 30px;
+        }
+
+        .card h2 {
+            margin-bottom: 20px;
+            font-size: 20px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        /* Form Styling */
+        form {
+            display: grid;
+            gap: 15px;
+            max-width: 420px;
+        }
+
+        input, textarea {
+            border: 1px solid #dfe4f2;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        textarea {
+            resize: none;
+            height: 80px;
+        }
+
+        button {
+            background: #ff7b2c;
+            color: #fff;
+            border: none;
+            padding: 11px;
+            border-radius: 8px;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #ff6a0c;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background: #f1f4fb;
+            font-weight: 500;
+        }
+
+        tr:hover {
+            background: #fafbff;
+        }
+
+        /* Mobile View */
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                flex-direction: row;
+                overflow-x: auto;
+            }
+            .sidebar a {
+                flex: 1;
+                text-align: center;
+            }
+            .main {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h2>ADMIN</h2>
+        <a href="#" class="active" onclick="showPanel('addProject')">Add Project</a>
+        <a href="#" onclick="showPanel('addClient')">Add Client</a>
+        <a href="#" onclick="showPanel('contacts')">View Contacts</a>
+        <a href="#" onclick="showPanel('subscribers')">View Subscribers</a>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main">
+
+        <div id="addProject" class="card panel">
+            <h2>Add New Project</h2>
+            <form onsubmit="saveProject(event)">
+                <input id="proj-img" type="text" placeholder="Image URL">
+                <input id="proj-name" type="text" placeholder="Project Name" required>
+                <textarea id="proj-desc" placeholder="Project Description" required></textarea>
+                <button type="submit">Save Project</button>
+            </form>
+        </div>
+
+        <div id="addClient" class="card panel" style="display:none;">
+            <h2>Add New Client</h2>
+            <form onsubmit="saveClient(event)">
+                <input id="client-img" type="text" placeholder="Client Image URL">
+                <input id="client-name" type="text" placeholder="Client Name" required>
+                <input id="client-desig" type="text" placeholder="Designation" required>
+                <textarea id="client-desc" placeholder="Client Feedback" required></textarea>
+                <button type="submit">Save Client</button>
+            </form>
+        </div>
+
+        <div id="contacts" class="card panel" style="display:none;">
+            <h2>Contact Form Submissions</h2>
+            <button onclick="loadContacts()">Refresh</button>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th><th>Name</th><th>Email</th><th>Mobile</th><th>City</th>
+                    </tr>
+                </thead>
+                <tbody id="contacts-table"></tbody>
+            </table>
+        </div>
+
+        <div id="subscribers" class="card panel" style="display:none;">
+            <h2>Newsletter Subscribers</h2>
+            <button onclick="loadSubscribers()">Refresh</button>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th><th>Email</th>
+                    </tr>
+                </thead>
+                <tbody id="subs-table"></tbody>
+            </table>
+        </div>
+
+    </div>
+
+<script>
+    const API_BASE = "http://localhost:8080";
+
+    function showPanel(panelId) {
+        document.querySelectorAll(".panel").forEach(p => p.style.display = "none");
+        document.getElementById(panelId).style.display = "block";
+
+        document.querySelectorAll(".sidebar a").forEach(a => a.classList.remove("active"));
+        event.target.classList.add("active");
+    }
+
+    function saveProject(e) {
+        e.preventDefault();
+        const body = {
+            imageUrl: document.getElementById("proj-img").value,
+            name: document.getElementById("proj-name").value,
+            description: document.getElementById("proj-desc").value
+        };
+
+        fetch(`${API_BASE}/api/projects/admin`, {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(body)
+        }).then(res => {
+            alert(res.ok ? "Project Saved!" : "Error saving project");
+        });
+    }
+
+    function saveClient(e) {
+        e.preventDefault();
+        const body = {
+            imageUrl: document.getElementById("client-img").value,
+            name: document.getElementById("client-name").value,
+            designation: document.getElementById("client-desig").value,
+            description: document.getElementById("client-desc").value
+        };
+
+        fetch(`${API_BASE}/api/clients/admin`, {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(body)
+        }).then(res => {
+            alert(res.ok ? "Client Saved!" : "Error saving client");
+        });
+    }
+
+    function loadContacts() {
+        fetch(`${API_BASE}/api/contacts/admin`)
+            .then(res => res.json())
+            .then(data => {
+                let rows = "";
+                data.forEach(c => {
+                    rows += `<tr>
+                        <td>${c.id}</td>
+                        <td>${c.fullName}</td>
+                        <td>${c.email}</td>
+                        <td>${c.mobile}</td>
+                        <td>${c.city}</td>
+                    </tr>`;
+                });
+                document.getElementById("contacts-table").innerHTML = rows;
+            });
+    }
+
+    function loadSubscribers() {
+        fetch(`${API_BASE}/api/subscribers/admin`)
+            .then(res => res.json())
+            .then(data => {
+                let rows = "";
+                data.forEach(s => {
+                    rows += `<tr>
+                        <td>${s.id}</td>
+                        <td>${s.email}</td>
+                    </tr>`;
+                });
+                document.getElementById("subs-table").innerHTML = rows;
+            });
+    }
+</script>
+
+</body>
+</html>
